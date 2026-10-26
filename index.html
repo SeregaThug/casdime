@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Колесо Фортуны — Испытай удачу!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  
+  body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e3a8a 0%, #0f172a 60%, #020617 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 20px 16px;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,1), transparent),
+      radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1.5px 1.5px at 10% 80%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1px 1px at 70% 90%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1.5px 1.5px at 90% 10%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(2px 2px at 30% 60%, rgba(255,255,255,0.8), transparent);
+    background-size: 300% 300%;
+    animation: sparkle 10s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes sparkle {
+    0% { background-position: 0% 0%; opacity: 0.4; }
+    50% { opacity: 0.9; }
+    100% { background-position: 100% 100%; opacity: 0.4; }
+  }
+
+  .main-container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .header h1 {
+    font-size: clamp(22px, 6.5vw, 32px);
+    font-weight: 900;
+    line-height: 1.2;
+    color: #e0f2fe;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.6), 0 2px 4px rgba(0,0,0,0.5);
+  }
+  .header p {
+    font-size: clamp(13px, 3.8vw, 16px);
+    color: #bae6fd;
+    margin-top: 6px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .wheel-wrap {
+    position: relative;
+    width: min(90vw, 380px);
+    aspect-ratio: 1 / 1;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wheel-glow {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0) 70%);
+    animation: pulse 2.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .wheel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid #f8fafc;
+    box-shadow: 
+      0 0 0 3px #0f172a, 
+      0 0 0 6px #38bdf8, 
+      0 0 40px rgba(56, 189, 248, 0.5),
+      0 10px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+    transition: transform 5s cubic-bezier(0.15, 0.9, 0.25, 1);
+    transform: rotate(0deg);
+    background: #0f172a;
+  }
+
+  .wheel-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      #f0f9ff 0deg 45deg,
+      #7dd3fc 45deg 90deg,
+      #0ea5e9 90deg 135deg,
+      #0369a1 135deg 180deg,
+      #e0f2fe 180deg 225deg,
+      #38bdf8 225deg 270deg,
+      #6366f1 270deg 315deg,
+      #0284c7 315deg 360deg
+    );
+  }
+
+  .label-wrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .label {
+    position: absolute;
+    font-size: clamp(11px, 3.8vw, 16px);
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 
+      0 2px 4px rgba(0,0,0,0.9), 
+      0 0 10px rgba(0,0,0,0.8),
+      0 0 20px rgba(56, 189, 248, 0.6);
+    white-space: nowrap;
+    user-select: none;
+    letter-spacing: 0.3px;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .spin-btn {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    background: radial-gradient(circle at 35% 30%, #ffffff, #e0f2fe 40%, #7dd3fc 100%);
+    color: #0c4a6e;
+    font-weight: 900;
+    font-size: clamp(12px, 3.8vw, 18px);
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 
+      0 0 20px rgba(56, 189, 248, 0.6), 
+      inset 0 -3px 6px rgba(0,0,0,0.1),
+      0 6px 16px rgba(0,0,0,0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    z-index: 5;
+    line-height: 1.1;
+    padding: 4px;
+  }
+  .spin-btn:active { transform: translate(-50%, -50%) scale(0.94); }
+  .spin-btn:disabled { cursor: not-allowed; filter: grayscale(0.3) brightness(0.9); }
+
+  .pointer {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 28px solid #38bdf8;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+    z-index: 6;
+  }
+  .pointer::after {
+    content: '';
+    position: absolute;
+    top: -26px;
+    left: -10px;
+    width: 20px; height: 20px;
+    background: #e0f2fe;
+    border-radius: 50%;
+    border: 3px solid #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+  }
+
+  .result {
+    min-height: 28px;
+    font-size: clamp(15px, 4.5vw, 20px);
+    font-weight: 800;
+    text-align: center;
+    color: #e0f2fe;
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+    transition: opacity 0.3s;
+    opacity: 0;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .result.show { opacity: 1; }
+
+  .cta {
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 14px;
+    font-size: clamp(16px, 4.8vw, 20px);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #082f49;
+    background: linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0284c7);
+    box-shadow: 0 8px 0 #075985, 0 12px 28px rgba(56, 189, 248, 0.4);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    animation: ctaPulse 2s ease-in-out infinite;
+  }
+  .cta:active {
+    transform: translateY(5px);
+    box-shadow: 0 3px 0 #075985, 0 6px 16px rgba(56, 189, 248, 0.4);
+  }
+  .cta:disabled {
+    filter: grayscale(0.4) brightness(0.8);
+    cursor: not-allowed;
+    animation: none;
+  }
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 8px 0 #075985, 0 12px 28px rgba(56, 189, 248, 0.4); }
+    50% { box-shadow: 0 8px 0 #075985, 0 12px 40px rgba(56, 189, 248, 0.8), 0 0 20px rgba(255,255,255,0.3); }
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #64748b;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    padding: 0 6px;
+  }
+  .disclaimer a { color: #94a3b8; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: linear-gradient(160deg, #1e293b, #0f172a);
+    border: 2px solid #38bdf8;
+    border-radius: 18px;
+    padding: 26px 20px 22px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    transform: scale(0.85);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(56, 189, 248, 0.2);
+  }
+  .modal-overlay.active .modal { transform: scale(1); }
+  .modal h2 {
+    font-size: clamp(18px, 5vw, 24px);
+    color: #e0f2fe;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+  .modal .prize-big {
+    font-size: clamp(22px, 7vw, 32px);
+    font-weight: 900;
+    color: #ffffff;
+    margin: 8px 0 6px;
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+    line-height: 1.2;
+  }
+  .modal .prize-sub {
+    font-size: 14px;
+    color: #bae6fd;
+    margin-bottom: 16px;
+  }
+
+  .promo-block {
+    background: linear-gradient(135deg, #0c4a6e, #075985);
+    border: 2px dashed #38bdf8;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .promo-label {
+    font-size: 12px;
+    color: #7dd3fc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .promo-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+  .promo-code {
+    font-size: clamp(22px, 7vw, 30px);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+    font-family: 'Courier New', monospace;
+    user-select: all;
+  }
+  .copy-btn {
+    background: #38bdf8;
+    color: #0c4a6e;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .copy-btn:active { transform: scale(0.95); }
+  .copy-btn.copied {
+    background: #22c55e;
+    color: #fff;
+  }
+
+  .modal p {
+    font-size: 13px;
+    color: #bae6fd;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+  .modal .modal-cta {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #082f49;
+    background: linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0284c7);
+    box-shadow: 0 5px 0 #075985;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .modal .modal-cta:active { transform: translateY(4px); box-shadow: 0 1px 0 #075985; }
+  .modal .close-hint {
+    display: block;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #64748b;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 400px) {
+    body { padding: 15px 12px; }
+    .main-container { gap: 4px; }
+    .wheel-wrap { margin: 5px 0; width: min(85vw, 320px); }
+    .label { font-size: clamp(9px, 3.2vw, 13px); }
+    .cta { padding: 14px; margin-top: 4px; }
+    .pointer { 
+      border-left-width: 14px; 
+      border-right-width: 14px; 
+      border-top-width: 24px; 
+      top: -6px;
+    }
+    .pointer::after {
+      top: -22px;
+      left: -9px;
+      width: 18px; height: 18px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  
+  <div class="header">
+    <h1>Колесо Фортуны</h1>
+    <p>Испытай удачу — забери свой приз прямо сейчас!</p>
+  </div>
+
+  <div class="wheel-wrap">
+    <div class="wheel-glow"></div>
+    <div class="pointer"></div>
+    <div class="wheel" id="wheel">
+      <div class="wheel-face"></div>
+    </div>
+    <button class="spin-btn" id="spinBtn" aria-label="Крутить колесо">КРУТИТЬ</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <button class="cta" id="ctaBtn">Забрать бонус</button>
+
+  <p class="disclaimer">
+    Акция носит развлекательный характер. Приз предоставляется партнёром.<br>
+    18+ | <a href="#" onclick="return false;">Правила</a> | <a href="#" onclick="return false;">Конфиденциальность</a>
+  </p>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>🎉 Поздравляем!</h2>
+    <div class="prize-big" id="modalPrize">100 ₽</div>
+    <div class="prize-sub">Ваш выигрыш зачислен!</div>
+
+    <div class="promo-block">
+      <div class="promo-label">🔑 Введите промокод при регистрации:</div>
+      <div class="promo-code-row">
+        <span class="promo-code" id="promoCode">supreme</span>
+        <button class="copy-btn" id="copyBtn">Скопировать</button>
+      </div>
+    </div>
+
+    <p>Перейдите на сайт партнёра, зарегистрируйтесь и введите промокод <b>supreme</b>, чтобы получить приз.</p>
+    <button class="modal-cta" id="modalCta">Получить приз →</button>
+    <span class="close-hint" id="closeModal">закрыть</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const TARGET_URL = 'https://gamewin777.ink/7Jhrai?promo=supreme';
+  const PROMO_CODE = 'supreme';
+
+  // 4 типа призов на колесе (по 2 сектора каждого = 8 секторов)
+  const PRIZES = [
+    { text: '100 ₽ + фриспин',  label: '100₽+\nфриспин' },
+    { text: '+360%',            label: '+360%'         },
+    { text: '115-400 ₽',        label: '115-400 ₽'     },
+    { text: '100 ₽',            label: '100 ₽'         },
+    { text: '100 ₽ + фриспин',  label: '100₽+\nфриспин' },
+    { text: '+360%',            label: '+360%'         },
+    { text: '115-400 ₽',        label: '115-400 ₽'     },
+    { text: '100 ₽',            label: '100 ₽'         }
+  ];
+
+  // 4 варианта выигрыша в модалке (рандом)
+  const WIN_OPTIONS = [
+    '100 ₽ + фриспин',
+    '100 ₽ + 360%',
+    '115-400 ₽',
+    '100 ₽'
+  ];
+
+  const SECTORS = PRIZES.length;
+  const SECTOR_DEG = 360 / SECTORS;
+
+  const wheel      = document.getElementById('wheel');
+  const spinBtn    = document.getElementById('spinBtn');
+  const ctaBtn     = document.getElementById('ctaBtn');
+  const resultEl   = document.getElementById('result');
+
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalPrize   = document.getElementById('modalPrize');
+  const modalCta     = document.getElementById('modalCta');
+  const closeModal   = document.getElementById('closeModal');
+  const copyBtn      = document.getElementById('copyBtn');
+
+  let spinning = false;
+  let currentRotation = 0;
+  let wonPrizeIndex = -1;
+
+  (function buildLabels() {
+    PRIZES.forEach(function (prize, i) {
+      const wrap = document.createElement('div');
+      wrap.className = 'label-wrap';
+      
+      const el = document.createElement('span');
+      el.className = 'label';
+      el.textContent = prize.label;
+      el.style.whiteSpace = 'pre';
+      
+      wrap.appendChild(el);
+      wheel.appendChild(wrap);
+
+      const midAngle = i * SECTOR_DEG + SECTOR_DEG / 2;
+      wrap.dataset.angle = midAngle;
+    });
+    
+    positionLabels();
+
+    function positionLabels() {
+      const r = wheel.clientWidth * 0.34; 
+      
+      document.querySelectorAll('.label-wrap').forEach(function (wrap) {
+        const a = parseFloat(wrap.dataset.angle);
+        const rad = (a - 90) * Math.PI / 180;
+        
+        const x = Math.cos(rad) * r;
+        const y = Math.sin(rad) * r;
+        
+        wrap.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        
+        const label = wrap.querySelector('.label');
+        label.style.transform = `rotate(${-a}deg)`;
+      });
+    }
+    
+    window.addEventListener('resize', positionLabels);
+  })();
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+
+    spinBtn.disabled = true;
+    ctaBtn.disabled = true;
+    resultEl.classList.remove('show');
+    resultEl.textContent = '';
+
+    wonPrizeIndex = randomInt(0, SECTORS - 1);
+
+    const midAngle = wonPrizeIndex * SECTOR_DEG + SECTOR_DEG / 2;
+    const targetMod = (360 - midAngle) % 360;
+    const currentMod = ((currentRotation % 360) + 360) % 360;
+    let delta = (targetMod - currentMod + 360) % 360;
+
+    const fullTurns = 5 + randomInt(0, 2);
+    const totalDelta = fullTurns * 360 + delta;
+
+    currentRotation += totalDelta;
+    wheel.style.transform = 'rotate(' + currentRotation + 'deg)';
+
+    const onEnd = function () {
+      wheel.removeEventListener('transitionend', onEnd);
+
+      // Рандомный выигрыш из 4 вариантов
+      const winText = WIN_OPTIONS[randomInt(0, WIN_OPTIONS.length - 1)];
+
+      resultEl.textContent = '🎉 Вы выиграли: ' + winText + '!';
+      resultEl.classList.add('show');
+
+      setTimeout(function () {
+        modalPrize.textContent = winText;
+        modalOverlay.classList.add('active');
+      }, 400);
+
+      spinning = false;
+      spinBtn.disabled = false;
+      ctaBtn.disabled = false;
+      spinBtn.textContent = 'ЕЩЁ РАЗ';
+    };
+
+    let ended = false;
+    function safeEnd() {
+      if (ended) return;
+      ended = true;
+      onEnd();
+    }
+    wheel.addEventListener('transitionend', function handler(e) {
+      if (e.propertyName === 'transform') {
+        wheel.removeEventListener('transitionend', handler);
+        safeEnd();
+      }
+    });
+    setTimeout(safeEnd, 5600);
+  }
+
+  function goToTarget() {
+    window.location.href = TARGET_URL;
+  }
+
+  copyBtn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(PROMO_CODE).then(function () {
+        copyBtn.textContent = '✓ Скопировано';
+        copyBtn.classList.add('copied');
+        setTimeout(function () {
+          copyBtn.textContent = 'Скопировать';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = PROMO_CODE;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      copyBtn.textContent = '✓ Скопировано';
+      copyBtn.classList.add('copied');
+      setTimeout(function () {
+        copyBtn.textContent = 'Скопировать';
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    }
+  });
+
+  spinBtn.addEventListener('click', spin);
+
+  ctaBtn.addEventListener('click', function () {
+    if (wonPrizeIndex >= 0) {
+      goToTarget();
+    } else {
+      spin();
+    }
+  });
+
+  modalCta.addEventListener('click', goToTarget);
+
+  closeModal.addEventListener('click', function () {
+    modalOverlay.classList.remove('active');
+  });
+
+  modalOverlay.addEventListener('click', function (e) {
+    if (e.target === modalOverlay) {
+      modalOverlay.classList.remove('active');
+    }
+  });
+
+  const observer = new MutationObserver(function () {
+    document.body.style.overflow = modalOverlay.classList.contains('active') ? 'hidden' : '';
+  });
+  observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
+
+})();
+</script>
+</body>
+</html>
