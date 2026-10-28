@@ -2,680 +2,597 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Колесо Фортуны — Испытай удачу!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колесо Фортуны</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; }
-  
-  body {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: radial-gradient(circle at 50% 0%, #1e3a8a 0%, #0f172a 60%, #020617 100%);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow-x: hidden;
-    padding: 20px 16px;
-    position: relative;
-  }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  body::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: 
-      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.9), transparent),
-      radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.7), transparent),
-      radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,1), transparent),
-      radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,0.8), transparent),
-      radial-gradient(1.5px 1.5px at 10% 80%, rgba(255,255,255,0.6), transparent),
-      radial-gradient(1px 1px at 70% 90%, rgba(255,255,255,0.9), transparent),
-      radial-gradient(1.5px 1.5px at 90% 10%, rgba(255,255,255,0.7), transparent),
-      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5), transparent),
-      radial-gradient(2px 2px at 30% 60%, rgba(255,255,255,0.8), transparent);
-    background-size: 300% 300%;
-    animation: sparkle 10s linear infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
-  @keyframes sparkle {
-    0% { background-position: 0% 0%; opacity: 0.4; }
-    50% { opacity: 0.9; }
-    100% { background-position: 100% 100%; opacity: 0.4; }
-  }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  overflow-x: hidden;
+}
 
-  .main-container {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-    z-index: 1;
-  }
+h1 {
+  margin-top: 30px;
+  font-size: 2.2rem;
+  background: linear-gradient(90deg, #ff6b6b, #ffd93d, #ff6b6b);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer { to { background-position: 200% center; } }
 
-  .header {
-    text-align: center;
-    width: 100%;
-    margin-top: 10px;
-  }
-  .header h1 {
-    font-size: clamp(22px, 6.5vw, 32px);
-    font-weight: 900;
-    line-height: 1.2;
-    color: #e0f2fe;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 15px rgba(56, 189, 248, 0.6), 0 2px 4px rgba(0,0,0,0.5);
-  }
-  .header p {
-    font-size: clamp(13px, 3.8vw, 16px);
-    color: #bae6fd;
-    margin-top: 6px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
+.subtitle { color:#aaa; margin: 10px 0 30px; font-size:1.05rem; text-align:center; }
 
-  .wheel-wrap {
-    position: relative;
-    width: min(90vw, 380px);
-    aspect-ratio: 1 / 1;
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.wheel-scene {
+  position: relative;
+  width: 460px;
+  height: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .wheel-glow {
-    position: absolute;
-    inset: -20px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0) 70%);
-    animation: pulse 2.5s ease-in-out infinite;
-    pointer-events: none;
-  }
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.1); opacity: 1; }
-  }
+.wheel-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,200,50,0.2) 0%, transparent 70%);
+  animation: pulseGlow 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pulseGlow {
+  0%,100% { transform:scale(1); opacity:.7; }
+  50% { transform:scale(1.06); opacity:1; }
+}
 
-  .wheel {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 4px solid #f8fafc;
-    box-shadow: 
-      0 0 0 3px #0f172a, 
-      0 0 0 6px #38bdf8, 
-      0 0 40px rgba(56, 189, 248, 0.5),
-      0 10px 30px rgba(0,0,0,0.6);
-    overflow: hidden;
-    transition: transform 5s cubic-bezier(0.15, 0.9, 0.25, 1);
-    transform: rotate(0deg);
-    background: #0f172a;
-  }
+.bulbs {
+  position: absolute;
+  width: 460px;
+  height: 460px;
+  pointer-events: none;
+}
+.bulb {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #ffd93d;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffd93d, 0 0 16px #ffaa00;
+  animation: bulbBlink 0.8s ease-in-out infinite alternate;
+}
+@keyframes bulbBlink {
+  0% { opacity:.3; transform:scale(.7); }
+  100% { opacity:1; transform:scale(1.15); }
+}
 
-  .wheel-face {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: conic-gradient(
-      #f0f9ff 0deg 45deg,
-      #7dd3fc 45deg 90deg,
-      #0ea5e9 90deg 135deg,
-      #0369a1 135deg 180deg,
-      #e0f2fe 180deg 225deg,
-      #38bdf8 225deg 270deg,
-      #6366f1 270deg 315deg,
-      #0284c7 315deg 360deg
-    );
-  }
+.wheel-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+}
 
-  .label-wrap {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 0;
-    height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
+canvas#wheel {
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 25px rgba(255,180,0,0.4));
+  transition: filter .3s;
+}
+canvas#wheel.spinning {
+  filter: drop-shadow(0 0 40px rgba(255,180,0,0.7));
+}
 
-  .label {
-    position: absolute;
-    font-size: clamp(11px, 3.8vw, 16px);
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 
-      0 2px 4px rgba(0,0,0,0.9), 
-      0 0 10px rgba(0,0,0,0.8),
-      0 0 20px rgba(56, 189, 248, 0.6);
-    white-space: nowrap;
-    user-select: none;
-    letter-spacing: 0.3px;
-    line-height: 1.15;
-    text-align: center;
-  }
+.pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 38px solid #ff3355;
+  filter: drop-shadow(0 4px 8px rgba(255,50,80,0.6));
+  z-index: 5;
+}
+.pointer.bounce {
+  animation: pointerBounce .12s ease;
+}
+@keyframes pointerBounce {
+  0% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(5px); }
+  100% { transform: translateX(-50%) translateY(0); }
+}
 
-  .spin-btn {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 28%;
-    height: 28%;
-    border-radius: 50%;
-    border: 3px solid #ffffff;
-    background: radial-gradient(circle at 35% 30%, #ffffff, #e0f2fe 40%, #7dd3fc 100%);
-    color: #0c4a6e;
-    font-weight: 900;
-    font-size: clamp(12px, 3.8vw, 18px);
-    text-transform: uppercase;
-    cursor: pointer;
-    box-shadow: 
-      0 0 20px rgba(56, 189, 248, 0.6), 
-      inset 0 -3px 6px rgba(0,0,0,0.1),
-      0 6px 16px rgba(0,0,0,0.4);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    z-index: 5;
-    line-height: 1.1;
-    padding: 4px;
-  }
-  .spin-btn:active { transform: translate(-50%, -50%) scale(0.94); }
-  .spin-btn:disabled { cursor: not-allowed; filter: grayscale(0.3) brightness(0.9); }
+.center-btn {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff5566, #cc2233);
+  border: 3px solid #ffd93d;
+  color: #fff;
+  font-weight: 900;
+  font-size: .85rem;
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: 0 0 20px rgba(255,50,80,0.5), inset 0 -4px 8px rgba(0,0,0,0.3);
+  transition: transform .2s, box-shadow .2s;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  letter-spacing: 1px;
+}
+.center-btn:hover { transform: translate(-50%,-50%) scale(1.08); box-shadow: 0 0 30px rgba(255,50,80,0.8); }
+.center-btn:active { transform: translate(-50%,-50%) scale(.95); }
+.center-btn:disabled { opacity:.6; cursor:not-allowed; }
 
-  .pointer {
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 16px solid transparent;
-    border-right: 16px solid transparent;
-    border-top: 28px solid #38bdf8;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
-    z-index: 6;
-  }
-  .pointer::after {
-    content: '';
-    position: absolute;
-    top: -26px;
-    left: -10px;
-    width: 20px; height: 20px;
-    background: #e0f2fe;
-    border-radius: 50%;
-    border: 3px solid #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
-  }
+.spin-btn {
+  margin-top: 30px;
+  padding: 16px 60px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #ff3355, #ff6b35);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 25px rgba(255,50,80,0.5);
+  transition: all .2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.spin-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 35px rgba(255,50,80,0.7); }
+.spin-btn:active { transform: translateY(0); }
+.spin-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 
-  .result {
-    min-height: 28px;
-    font-size: clamp(15px, 4.5vw, 20px);
-    font-weight: 800;
-    text-align: center;
-    color: #e0f2fe;
-    text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
-    transition: opacity 0.3s;
-    opacity: 0;
-    padding: 0 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .result.show { opacity: 1; }
+.disclaimer {
+  margin-top: 25px;
+  color: #666;
+  font-size: .85rem;
+  text-align: center;
+  line-height: 1.6;
+}
+.disclaimer a { color: #ffd93d; text-decoration: none; }
 
-  .cta {
-    width: 100%;
-    padding: 16px 20px;
-    border: none;
-    border-radius: 14px;
-    font-size: clamp(16px, 4.8vw, 20px);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #082f49;
-    background: linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0284c7);
-    box-shadow: 0 8px 0 #075985, 0 12px 28px rgba(56, 189, 248, 0.4);
-    cursor: pointer;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-    animation: ctaPulse 2s ease-in-out infinite;
-  }
-  .cta:active {
-    transform: translateY(5px);
-    box-shadow: 0 3px 0 #075985, 0 6px 16px rgba(56, 189, 248, 0.4);
-  }
-  .cta:disabled {
-    filter: grayscale(0.4) brightness(0.8);
-    cursor: not-allowed;
-    animation: none;
-  }
-  @keyframes ctaPulse {
-    0%, 100% { box-shadow: 0 8px 0 #075985, 0 12px 28px rgba(56, 189, 248, 0.4); }
-    50% { box-shadow: 0 8px 0 #075985, 0 12px 40px rgba(56, 189, 248, 0.8), 0 0 20px rgba(255,255,255,0.3); }
-  }
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.active { display: flex; }
 
-  .disclaimer {
-    font-size: 11px;
-    line-height: 1.4;
-    color: #64748b;
-    text-align: center;
-    margin-top: 4px;
-    margin-bottom: 10px;
-    padding: 0 6px;
-  }
-  .disclaimer a { color: #94a3b8; }
+.modal {
+  background: linear-gradient(145deg, #1e1e30, #12121f);
+  border: 2px solid #ffd93d;
+  border-radius: 20px;
+  padding: 40px 35px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  animation: modalIn .5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 0 60px rgba(255,200,50,0.3);
+}
+@keyframes modalIn {
+  from { transform: scale(.5) rotate(-10deg); opacity:0; }
+  to { transform: scale(1) rotate(0); opacity:1; }
+}
 
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(2, 6, 23, 0.85);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-  .modal-overlay.active { opacity: 1; pointer-events: auto; }
-  .modal {
-    background: linear-gradient(160deg, #1e293b, #0f172a);
-    border: 2px solid #38bdf8;
-    border-radius: 18px;
-    padding: 26px 20px 22px;
-    max-width: 380px;
-    width: 100%;
-    text-align: center;
-    transform: scale(0.85);
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(56, 189, 248, 0.2);
-  }
-  .modal-overlay.active .modal { transform: scale(1); }
-  .modal h2 {
-    font-size: clamp(18px, 5vw, 24px);
-    color: #e0f2fe;
-    margin-bottom: 10px;
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-  }
-  .modal .prize-big {
-    font-size: clamp(22px, 7vw, 32px);
-    font-weight: 900;
-    color: #ffffff;
-    margin: 8px 0 6px;
-    text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
-    line-height: 1.2;
-  }
-  .modal .prize-sub {
-    font-size: 14px;
-    color: #bae6fd;
-    margin-bottom: 16px;
-  }
+.modal h2 { font-size: 1.8rem; margin-bottom: 10px; }
+.modal .prize {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffd93d;
+  margin: 15px 0;
+  text-shadow: 0 0 20px rgba(255,200,50,0.5);
+  animation: prizePulse 1s ease-in-out infinite alternate;
+}
+@keyframes prizePulse {
+  from { transform:scale(1); }
+  to { transform:scale(1.08); }
+}
+.modal .promo-label { color:#aaa; margin: 15px 0 5px; font-size:.95rem; }
+.promo-box {
+  display: flex;
+  align-items: center;
+  background: #0a0a15;
+  border: 2px dashed #ffd93d;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 10px 0 20px;
+  justify-content: space-between;
+}
+.promo-code {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffd93d;
+  letter-spacing: 3px;
+  font-family: monospace;
+}
+.copy-btn {
+  background: #ffd93d;
+  color: #000;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  font-size: .85rem;
+}
+.copy-btn:hover { background:#fff; }
+.copy-btn.copied { background:#4caf50; color:#fff; }
 
-  .promo-block {
-    background: linear-gradient(135deg, #0c4a6e, #075985);
-    border: 2px dashed #38bdf8;
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin: 0 0 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  .promo-label {
-    font-size: 12px;
-    color: #7dd3fc;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-  }
-  .promo-code-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    justify-content: center;
-  }
-  .promo-code {
-    font-size: clamp(22px, 7vw, 30px);
-    font-weight: 900;
-    color: #ffffff;
-    letter-spacing: 2px;
-    text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
-    font-family: 'Courier New', monospace;
-    user-select: all;
-  }
-  .copy-btn {
-    background: #38bdf8;
-    color: #0c4a6e;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .copy-btn:active { transform: scale(0.95); }
-  .copy-btn.copied {
-    background: #22c55e;
-    color: #fff;
-  }
+.modal .info { color:#888; font-size:.85rem; line-height:1.5; margin-bottom:20px; }
 
-  .modal p {
-    font-size: 13px;
-    color: #bae6fd;
-    margin-bottom: 18px;
-    line-height: 1.4;
-  }
-  .modal .modal-cta {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #082f49;
-    background: linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0284c7);
-    box-shadow: 0 5px 0 #075985;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  .modal .modal-cta:active { transform: translateY(4px); box-shadow: 0 1px 0 #075985; }
-  .modal .close-hint {
-    display: block;
-    margin-top: 12px;
-    font-size: 12px;
-    color: #64748b;
-    cursor: pointer;
-    text-decoration: underline;
-  }
+.modal-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 
-  @media (max-width: 400px) {
-    body { padding: 15px 12px; }
-    .main-container { gap: 4px; }
-    .wheel-wrap { margin: 5px 0; width: min(85vw, 320px); }
-    .label { font-size: clamp(9px, 3.2vw, 13px); }
-    .cta { padding: 14px; margin-top: 4px; }
-    .pointer { 
-      border-left-width: 14px; 
-      border-right-width: 14px; 
-      border-top-width: 24px; 
-      top: -6px;
-    }
-    .pointer::after {
-      top: -22px;
-      left: -9px;
-      width: 18px; height: 18px;
-    }
-  }
+/* Стили для кнопки-ссылки */
+.btn-primary {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #ff3355, #ff6b35);
+  color:#fff; 
+  text-decoration: none;
+  border-radius:30px;
+  font-weight:700; font-size:1rem; cursor:pointer;
+  transition: transform .2s;
+  border: none;
+}
+.btn-primary:hover { transform:scale(1.05); }
+
+.btn-secondary {
+  padding: 12px 28px;
+  background: transparent;
+  color:#aaa; border:2px solid #444; border-radius:30px;
+  font-weight:700; font-size:1rem; cursor:pointer;
+  transition: all .2s;
+}
+.btn-secondary:hover { border-color:#ffd93d; color:#ffd93d; }
+
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  overflow: hidden;
+}
+.confetti {
+  position: absolute;
+  top: -10px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity:1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity:0; }
+}
+
+.shake { animation: shake .5s ease; }
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  20% { transform:translateX(-8px); }
+  40% { transform:translateX(8px); }
+  60% { transform:translateX(-5px); }
+  80% { transform:translateX(5px); }
+}
+
+@media (max-width:480px) {
+  .wheel-scene { width:360px; height:360px; }
+  .wheel-container { width:320px; height:320px; }
+  canvas#wheel { width:320px; height:320px; }
+  .bulbs { width:360px; height:360px; }
+  h1 { font-size:1.6rem; }
+}
 </style>
 </head>
 <body>
 
-<div class="main-container">
-  
-  <div class="header">
-    <h1>Колесо Фортуны</h1>
-    <p>Испытай удачу — забери свой приз прямо сейчас!</p>
+<h1>🎡 Колесо Фортуны</h1>
+<p class="subtitle">Испытай удачу — забери свой приз прямо сейчас!</p>
+
+<div class="wheel-scene" id="wheelScene">
+  <div class="wheel-glow"></div>
+  <div class="bulbs" id="bulbs"></div>
+  <div class="wheel-container">
+    <canvas id="wheel" width="800" height="800"></canvas>
+    <div class="pointer" id="pointer"></div>
+    <button class="center-btn" id="centerBtn">КРУТИТЬ</button>
   </div>
-
-  <div class="wheel-wrap">
-    <div class="wheel-glow"></div>
-    <div class="pointer"></div>
-    <div class="wheel" id="wheel">
-      <div class="wheel-face"></div>
-    </div>
-    <button class="spin-btn" id="spinBtn" aria-label="Крутить колесо">КРУТИТЬ</button>
-  </div>
-
-  <div class="result" id="result"></div>
-
-  <button class="cta" id="ctaBtn">Забрать бонус</button>
-
-  <p class="disclaimer">
-    Акция носит развлекательный характер. Приз предоставляется партнёром.<br>
-    18+ | <a href="#" onclick="return false;">Правила</a> | <a href="#" onclick="return false;">Конфиденциальность</a>
-  </p>
-
 </div>
 
-<div class="modal-overlay" id="modalOverlay">
+<button class="spin-btn" id="spinBtn">Крутить</button>
+
+<p class="disclaimer">
+  Акция носит развлекательный характер. Приз предоставляется партнёром.<br>
+  18+ | <a href="#">Правила</a> | <a href="#">Конфиденциальность</a>
+</p>
+
+<div class="modal-overlay" id="modal">
   <div class="modal">
     <h2>🎉 Поздравляем!</h2>
-    <div class="prize-big" id="modalPrize">100 ₽</div>
-    <div class="prize-sub">Ваш выигрыш зачислен!</div>
-
-    <div class="promo-block">
-      <div class="promo-label">🔑 Введите промокод при регистрации:</div>
-      <div class="promo-code-row">
-        <span class="promo-code" id="promoCode">supreme</span>
-        <button class="copy-btn" id="copyBtn">Скопировать</button>
-      </div>
+    <div class="prize" id="prizeText">—</div>
+    <p class="promo-label">🔑 Введите промокод при регистрации:</p>
+    <div class="promo-box">
+      <span class="promo-code" id="promoCode">supreme</span>
+      <button class="copy-btn" id="copyBtn">📋 Скопировать</button>
     </div>
-
-    <p>Перейдите на сайт партнёра, зарегистрируйтесь и введите промокод <b>supreme</b>, чтобы получить приз.</p>
-    <button class="modal-cta" id="modalCta">Получить приз →</button>
-    <span class="close-hint" id="closeModal">закрыть</span>
+    <p class="info">Перейдите на сайт партнёра, зарегистрируйтесь и введите промокод <b>supreme</b>, чтобы получить приз.</p>
+    <div class="modal-actions">
+      <!-- КНОПКА-ССЫЛКА НА УКАЗАННЫЙ URL -->
+      <a href="https://gamewin777.ink/7Jhrai" class="btn-primary" target="_blank" rel="noopener noreferrer">Получить приз →</a>
+      <button class="btn-secondary" id="closeModal">Закрыть</button>
+    </div>
   </div>
 </div>
 
+<div class="confetti-container" id="confettiContainer"></div>
+
 <script>
-(function () {
-  'use strict';
+const SEGMENTS = [
+  { label: '350 ₽',       color: '#FFA500', text: '#fff', prize: '350 ₽' },
+  { label: '100 ₽',       color: '#1a1a2e', text: '#fff', prize: '100 ₽' },
+  { label: '100 ₽',       color: '#FF3366', text: '#fff', prize: '100 ₽' },
+  { label: 'Бонус\n+300%',color: '#1a1a2e', text: '#fff', prize: 'Бонус +300%' },
+  { label: '150 ₽',       color: '#FFA500', text: '#fff', prize: '150 ₽' },
+  { label: '200 ₽',       color: '#1a1a2e', text: '#fff', prize: '200 ₽' },
+  { label: '250 ₽',       color: '#FF3366', text: '#fff', prize: '250 ₽' },
+  { label: '300 ₽',       color: '#1a1a2e', text: '#fff', prize: '300 ₽' },
+];
 
-  const TARGET_URL = 'https://gamewin777.ink/7Jhrai?promo=supreme';
-  const PROMO_CODE = 'supreme';
+const N = SEGMENTS.length;
+const ARC = (2 * Math.PI) / N;
+const HALF_ARC = ARC / 2;
 
-  // 4 типа призов на колесе (по 2 сектора каждого = 8 секторов)
-  const PRIZES = [
-    { text: '100 ₽ + фриспин',  label: '100₽+\nфриспин' },
-    { text: '+360%',            label: '+360%'         },
-    { text: '115-400 ₽',        label: '115-400 ₽'     },
-    { text: '100 ₽',            label: '100 ₽'         },
-    { text: '100 ₽ + фриспин',  label: '100₽+\nфриспин' },
-    { text: '+360%',            label: '+360%'         },
-    { text: '115-400 ₽',        label: '115-400 ₽'     },
-    { text: '100 ₽',            label: '100 ₽'         }
-  ];
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const CX = 400, CY = 400, R = 370;
 
-  // 4 варианта выигрыша в модалке (рандом)
-  const WIN_OPTIONS = [
-    '100 ₽ + фриспин',
-    '100 ₽ + 360%',
-    '115-400 ₽',
-    '100 ₽'
-  ];
+function drawWheel(rotation) {
+  ctx.clearRect(0, 0, 800, 800);
+  ctx.save();
+  ctx.translate(CX, CY);
+  ctx.rotate(rotation);
 
-  const SECTORS = PRIZES.length;
-  const SECTOR_DEG = 360 / SECTORS;
+  for (let i = 0; i < N; i++) {
+    const startAngle = -Math.PI / 2 + i * ARC - HALF_ARC;
+    const endAngle = startAngle + ARC;
+    const seg = SEGMENTS[i];
 
-  const wheel      = document.getElementById('wheel');
-  const spinBtn    = document.getElementById('spinBtn');
-  const ctaBtn     = document.getElementById('ctaBtn');
-  const resultEl   = document.getElementById('result');
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, R, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = '#ffd93d';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  }
 
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modalPrize   = document.getElementById('modalPrize');
-  const modalCta     = document.getElementById('modalCta');
-  const closeModal   = document.getElementById('closeModal');
-  const copyBtn      = document.getElementById('copyBtn');
-
-  let spinning = false;
-  let currentRotation = 0;
-  let wonPrizeIndex = -1;
-
-  (function buildLabels() {
-    PRIZES.forEach(function (prize, i) {
-      const wrap = document.createElement('div');
-      wrap.className = 'label-wrap';
-      
-      const el = document.createElement('span');
-      el.className = 'label';
-      el.textContent = prize.label;
-      el.style.whiteSpace = 'pre';
-      
-      wrap.appendChild(el);
-      wheel.appendChild(wrap);
-
-      const midAngle = i * SECTOR_DEG + SECTOR_DEG / 2;
-      wrap.dataset.angle = midAngle;
-    });
+  for (let i = 0; i < N; i++) {
+    const midAngle = -Math.PI / 2 + i * ARC;
+    const seg = SEGMENTS[i];
     
-    positionLabels();
-
-    function positionLabels() {
-      const r = wheel.clientWidth * 0.34; 
-      
-      document.querySelectorAll('.label-wrap').forEach(function (wrap) {
-        const a = parseFloat(wrap.dataset.angle);
-        const rad = (a - 90) * Math.PI / 180;
-        
-        const x = Math.cos(rad) * r;
-        const y = Math.sin(rad) * r;
-        
-        wrap.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-        
-        const label = wrap.querySelector('.label');
-        label.style.transform = `rotate(${-a}deg)`;
-      });
+    const textDist = R * 0.62;
+    const textX = textDist * Math.cos(midAngle);
+    const textY = textDist * Math.sin(midAngle);
+    
+    ctx.save();
+    ctx.translate(textX, textY);
+    
+    if (Math.sin(midAngle) > 0.1) {
+      ctx.rotate(Math.PI);
     }
     
-    window.addEventListener('resize', positionLabels);
-  })();
-
-  function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function spin() {
-    if (spinning) return;
-    spinning = true;
-
-    spinBtn.disabled = true;
-    ctaBtn.disabled = true;
-    resultEl.classList.remove('show');
-    resultEl.textContent = '';
-
-    wonPrizeIndex = randomInt(0, SECTORS - 1);
-
-    const midAngle = wonPrizeIndex * SECTOR_DEG + SECTOR_DEG / 2;
-    const targetMod = (360 - midAngle) % 360;
-    const currentMod = ((currentRotation % 360) + 360) % 360;
-    let delta = (targetMod - currentMod + 360) % 360;
-
-    const fullTurns = 5 + randomInt(0, 2);
-    const totalDelta = fullTurns * 360 + delta;
-
-    currentRotation += totalDelta;
-    wheel.style.transform = 'rotate(' + currentRotation + 'deg)';
-
-    const onEnd = function () {
-      wheel.removeEventListener('transitionend', onEnd);
-
-      // Рандомный выигрыш из 4 вариантов
-      const winText = WIN_OPTIONS[randomInt(0, WIN_OPTIONS.length - 1)];
-
-      resultEl.textContent = '🎉 Вы выиграли: ' + winText + '!';
-      resultEl.classList.add('show');
-
-      setTimeout(function () {
-        modalPrize.textContent = winText;
-        modalOverlay.classList.add('active');
-      }, 400);
-
-      spinning = false;
-      spinBtn.disabled = false;
-      ctaBtn.disabled = false;
-      spinBtn.textContent = 'ЕЩЁ РАЗ';
-    };
-
-    let ended = false;
-    function safeEnd() {
-      if (ended) return;
-      ended = true;
-      onEnd();
-    }
-    wheel.addEventListener('transitionend', function handler(e) {
-      if (e.propertyName === 'transform') {
-        wheel.removeEventListener('transitionend', handler);
-        safeEnd();
-      }
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = seg.text;
+    ctx.font = 'bold 34px Segoe UI, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    const lines = seg.label.split('\n');
+    const lineHeight = 38;
+    const totalHeight = lines.length * lineHeight;
+    const startY = -totalHeight / 2 + lineHeight / 2;
+    lines.forEach((line, idx) => {
+      ctx.fillText(line, 0, startY + idx * lineHeight);
     });
-    setTimeout(safeEnd, 5600);
+    ctx.restore();
   }
 
-  function goToTarget() {
-    window.location.href = TARGET_URL;
+  ctx.beginPath();
+  ctx.arc(0, 0, R, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#ffd93d';
+  ctx.lineWidth = 10;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+let currentRotation = 0;
+drawWheel(currentRotation);
+
+const bulbsEl = document.getElementById('bulbs');
+const BULB_COUNT = 24;
+const BULB_RADIUS = 215;
+const SCENE_SIZE = 460;
+const SCENE_CENTER = SCENE_SIZE / 2;
+
+for (let i = 0; i < BULB_COUNT; i++) {
+  const bulb = document.createElement('div');
+  bulb.className = 'bulb';
+  const angle = (i / BULB_COUNT) * 2 * Math.PI - Math.PI / 2;
+  const x = SCENE_CENTER + BULB_RADIUS * Math.cos(angle) - 6;
+  const y = SCENE_CENTER + BULB_RADIUS * Math.sin(angle) - 6;
+  bulb.style.left = x + 'px';
+  bulb.style.top = y + 'px';
+  bulb.style.animationDelay = (i * 0.08) + 's';
+  bulbsEl.appendChild(bulb);
+}
+
+let audioCtx;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+function playTick() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value = 1800 + Math.random() * 400;
+  osc.type = 'square';
+  gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.04);
+}
+function playWin() {
+  if (!audioCtx) return;
+  [523, 659, 784, 1047].forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    const t = audioCtx.currentTime + i * 0.12;
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc.start(t);
+    osc.stop(t + 0.4);
+  });
+}
+
+function getWinningIndex(rotation) {
+  const normalized = ((2 * Math.PI) - (rotation % (2 * Math.PI))) % (2 * Math.PI);
+  const index = Math.floor((normalized + HALF_ARC) / ARC) % N;
+  return index;
+}
+
+let spinning = false;
+const pointer = document.getElementById('pointer');
+const spinBtn = document.getElementById('spinBtn');
+const centerBtn = document.getElementById('centerBtn');
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  initAudio();
+  spinBtn.disabled = true;
+  centerBtn.disabled = true;
+  canvas.classList.add('spinning');
+
+  const winIndex = Math.floor(Math.random() * N);
+  const fullSpins = 5 + Math.floor(Math.random() * 3);
+  const jitter = (Math.random() - 0.5) * HALF_ARC * 0.5;
+  const targetRotation = currentRotation + fullSpins * 2 * Math.PI + (2 * Math.PI - winIndex * ARC) + jitter;
+
+  const startRotation = currentRotation;
+  const delta = targetRotation - startRotation;
+  const duration = 5000 + Math.random() * 1000;
+  const startTime = performance.now();
+
+  let lastSector = -1;
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 4);
+
+    currentRotation = startRotation + delta * ease;
+    drawWheel(currentRotation);
+
+    const curSector = getWinningIndex(currentRotation);
+    if (curSector !== lastSector) {
+      lastSector = curSector;
+      playTick();
+      pointer.classList.remove('bounce');
+      void pointer.offsetWidth;
+      pointer.classList.add('bounce');
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      const finalIndex = getWinningIndex(currentRotation);
+      canvas.classList.remove('spinning');
+      setTimeout(() => showWin(SEGMENTS[finalIndex].prize), 300);
+    }
   }
 
-  copyBtn.addEventListener('click', function () {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(PROMO_CODE).then(function () {
-        copyBtn.textContent = '✓ Скопировано';
-        copyBtn.classList.add('copied');
-        setTimeout(function () {
-          copyBtn.textContent = 'Скопировать';
-          copyBtn.classList.remove('copied');
-        }, 2000);
-      });
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = PROMO_CODE;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta);
-      copyBtn.textContent = '✓ Скопировано';
-      copyBtn.classList.add('copied');
-      setTimeout(function () {
-        copyBtn.textContent = 'Скопировать';
-        copyBtn.classList.remove('copied');
-      }, 2000);
-    }
+  requestAnimationFrame(animate);
+}
+
+spinBtn.addEventListener('click', spin);
+centerBtn.addEventListener('click', spin);
+
+function showWin(prize) {
+  playWin();
+  document.getElementById('prizeText').textContent = prize;
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('wheelScene').classList.add('shake');
+  setTimeout(() => document.getElementById('wheelScene').classList.remove('shake'), 500);
+  launchConfetti();
+  spinning = false;
+  spinBtn.disabled = false;
+  centerBtn.disabled = false;
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#ff3355','#ffd93d','#4caf50','#2196f3','#ff6b35','#e040fb'];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (6 + Math.random() * 8) + 'px';
+    c.style.height = (6 + Math.random() * 8) + 'px';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.animationDelay = (Math.random() * 0.5) + 's';
+    container.appendChild(c);
+  }
+  setTimeout(() => container.innerHTML = '', 5000);
+}
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  const code = document.getElementById('promoCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    this.textContent = '✓ Скопировано!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.textContent = '📋 Скопировать';
+      this.classList.remove('copied');
+    }, 2000);
   });
+});
 
-  spinBtn.addEventListener('click', spin);
-
-  ctaBtn.addEventListener('click', function () {
-    if (wonPrizeIndex >= 0) {
-      goToTarget();
-    } else {
-      spin();
-    }
-  });
-
-  modalCta.addEventListener('click', goToTarget);
-
-  closeModal.addEventListener('click', function () {
-    modalOverlay.classList.remove('active');
-  });
-
-  modalOverlay.addEventListener('click', function (e) {
-    if (e.target === modalOverlay) {
-      modalOverlay.classList.remove('active');
-    }
-  });
-
-  const observer = new MutationObserver(function () {
-    document.body.style.overflow = modalOverlay.classList.contains('active') ? 'hidden' : '';
-  });
-  observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
-
-})();
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('active');
+});
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('active');
+  }
+});
 </script>
 </body>
 </html>
