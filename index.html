@@ -1,553 +1,471 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Колесо Фортуны</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎡 Колесо Фортуны</title>
+    
+    <!-- Подключаем шрифты: Oswald для колеса, Montserrat для интерфейса -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #fff;
-  overflow-x: hidden;
-  padding: 15px 10px;
-}
+    <style>
+        :root {
+            --bg-color: #0f0c29;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --accent-color: #f5a623;
+            --text-color: #ffffff;
+            --modal-bg: #1e1e2f;
+        }
 
-h1 {
-  margin-top: 15px;
-  font-size: 1.8rem;
-  background: linear-gradient(90deg, #ff6b6b, #ffd93d, #ff6b6b);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s linear infinite;
-  text-align: center;
-}
-@keyframes shimmer { to { background-position: 200% center; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-.subtitle { color:#aaa; margin: 8px 0 20px; font-size:0.95rem; text-align:center; max-width: 350px; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100dvh; /* Используем dvh для корректной высоты на мобильных */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
 
-/* Главный контейнер колеса */
-.wheel-wrapper {
-  position: relative;
-  width: 340px;
-  height: 340px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+        }
 
-/* Слой с лампочками */
-.bulbs-ring {
-  position: absolute;
-  width: 340px;
-  height: 340px;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-}
+        h1 {
+            font-size: clamp(24px, 6vw, 32px);
+            font-weight: 800;
+            background: linear-gradient(90deg, #f5a623, #f7d070);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
 
-/* Свечение */
-.wheel-glow {
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,200,50,0.2) 0%, transparent 70%);
-  animation: pulseGlow 2s ease-in-out infinite;
-  pointer-events: none;
-  top: 10px;
-  left: 10px;
-}
-@keyframes pulseGlow {
-  0%,100% { transform:scale(1); opacity:0.6; }
-  50% { transform:scale(1.05); opacity:0.9; }
-}
+        .subtitle {
+            font-size: clamp(14px, 4vw, 16px);
+            color: #b8b8d1;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
 
-/* Контейнер canvas */
-.wheel-box {
-  position: relative;
-  width: 300px;
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        /* --- КОЛЕСО --- */
+        .wheel-wrapper {
+            position: relative;
+            /* aspect-ratio гарантирует, что колесо всегда будет идеальным кругом */
+            width: min(90vw, 360px); 
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+        }
 
-canvas#wheel {
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  border: 4px solid #ffd93d;
-  box-shadow: 0 0 30px rgba(255,180,0,0.6),
-              inset 0 0 0 3px rgba(255,217,61,0.4);
-  display: block;
-}
-canvas#wheel.spinning {
-  box-shadow: 0 0 50px rgba(255,180,0,0.9),
-              inset 0 0 0 3px rgba(255,217,61,0.5);
-}
+        .wheel-border {
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f5a623, #d48812);
+            padding: 8px;
+            box-shadow: 0 0 30px rgba(245, 166, 35, 0.3);
+        }
 
-/* Стрелка */
-.pointer {
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 16px solid transparent;
-  border-right: 16px solid transparent;
-  border-top: 32px solid #ff3355;
-  filter: drop-shadow(0 3px 6px rgba(255,50,80,0.7));
-  z-index: 10;
-}
-.pointer.bounce {
-  animation: pointerBounce .1s ease;
-}
-@keyframes pointerBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(4px); }
-}
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: #222;
+        }
 
-/* Центральная кнопка */
-.center-btn {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70px; height: 70px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ff5566, #cc2233);
-  border: 3px solid #ffd93d;
-  color: #fff;
-  font-weight: 900;
-  font-size: 0.75rem;
-  cursor: pointer;
-  z-index: 5;
-  box-shadow: 0 4px 15px rgba(255,50,80,0.6), inset 0 -3px 6px rgba(0,0,0,0.3);
-  transition: transform .15s;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  letter-spacing: 1px;
-}
-.center-btn:hover { transform: translate(-50%,-50%) scale(1.1); }
-.center-btn:active { transform: translate(-50%,-50%) scale(0.95); }
-.center-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        /* Указатель */
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff3366;
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
 
-.spin-btn {
-  margin-top: 25px;
-  padding: 14px 50px;
-  font-size: 1.25rem;
-  font-weight: 900;
-  border: none;
-  border-radius: 50px;
-  background: linear-gradient(135deg, #ff3355, #ff6b35);
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 6px 25px rgba(255,50,80,0.5);
-  transition: all .2s;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-.spin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,50,80,0.7); }
-.spin-btn:active { transform: translateY(0); }
-.spin-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+        /* Кнопка в центре */
+        .spin-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 28%;
+            height: 28%;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff3366, #d91a4d);
+            border: 4px solid #fff;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: clamp(12px, 3.5vw, 16px);
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 2px 5px rgba(255,255,255,0.2);
+            z-index: 5;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.1;
+        }
 
-.disclaimer {
-  margin-top: 20px;
-  color: #666;
-  font-size: 0.75rem;
-  text-align: center;
-  line-height: 1.5;
-  max-width: 320px;
-}
-.disclaimer a { color: #ffd93d; text-decoration: none; }
+        .spin-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
 
-/* Модалка */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(5px);
-  padding: 20px;
-}
-.modal-overlay.active { display: flex; }
+        .spin-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
 
-.modal {
-  background: linear-gradient(145deg, #1e1e30, #12121f);
-  border: 2px solid #ffd93d;
-  border-radius: 20px;
-  padding: 30px 25px;
-  max-width: 380px;
-  width: 95%;
-  text-align: center;
-  animation: modalIn .4s ease;
-  box-shadow: 0 0 50px rgba(255,200,50,0.3);
-}
-@keyframes modalIn {
-  from { transform: scale(0.6); opacity:0; }
-  to { transform: scale(1); opacity:1; }
-}
+        /* --- ФУТЕР --- */
+        .footer {
+            margin-top: auto;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #7a7a9d;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .footer a {
+            color: #b8b8d1;
+            text-decoration: underline;
+        }
 
-.modal h2 { font-size: 1.6rem; margin-bottom: 8px; }
-.modal .prize {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #ffd93d;
-  margin: 12px 0;
-  text-shadow: 0 0 20px rgba(255,200,50,0.6);
-}
-.modal .promo-label { color:#aaa; margin: 12px 0 5px; font-size:0.9rem; }
-.promo-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #0a0a15;
-  border: 2px dashed #ffd93d;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin: 10px 0 18px;
-}
-.promo-code {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #ffd93d;
-  letter-spacing: 2px;
-  font-family: monospace;
-}
-.copy-btn {
-  background: #ffd93d;
-  color: #000;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-.copy-btn.copied { background:#4caf50; color:#fff; }
+        /* --- МОДАЛЬНОЕ ОКНО --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
 
-.modal .info { color:#888; font-size:0.8rem; line-height:1.5; margin-bottom:18px; }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-.modal-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+        .modal {
+            background: var(--modal-bg);
+            border-radius: 20px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
 
-.btn-primary {
-  display: inline-block;
-  padding: 11px 24px;
-  background: linear-gradient(135deg, #ff3355, #ff6b35);
-  color:#fff; 
-  text-decoration: none;
-  border-radius:28px;
-  font-weight:700; font-size:0.95rem;
-  transition: transform .2s;
-}
-.btn-primary:hover { transform:scale(1.05); }
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
 
-.btn-secondary {
-  padding: 11px 24px;
-  background: transparent;
-  color:#aaa; border:2px solid #444; border-radius:28px;
-  font-weight:700; font-size:0.95rem; cursor:pointer;
-}
-.btn-secondary:hover { border-color:#ffd93d; color:#ffd93d; }
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #f5a623;
+        }
 
-/* Конфетти */
-.confetti-container {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 99;
-  overflow: hidden;
-}
-.confetti {
-  position: absolute;
-  top: -10px;
-  animation: confettiFall linear forwards;
-}
-@keyframes confettiFall {
-  to { transform: translateY(100vh) rotate(720deg); opacity:0; }
-}
+        .promo-block {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed #f5a623;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
-.shake { animation: shake .4s ease; }
-@keyframes shake {
-  0%,100% { transform:translateX(0); }
-  25% { transform:translateX(-6px); }
-  75% { transform:translateX(6px); }
-}
+        .promo-block:active {
+            background: rgba(245, 166, 35, 0.1);
+        }
 
-/* Мобильная адаптация */
-@media (max-width: 400px) {
-  .wheel-wrapper { width: 310px; height: 310px; }
-  .bulbs-ring { width: 310px; height: 310px; }
-  .wheel-glow { width: 290px; height: 290px; }
-  .wheel-box { width: 270px; height: 270px; }
-  canvas#wheel { width: 270px; height: 270px; }
-  .center-btn { width: 62px; height: 62px; font-size: 0.7rem; }
-  h1 { font-size: 1.5rem; }
-  .spin-btn { padding: 12px 40px; font-size: 1.1rem; }
-}
+        .promo-code {
+            font-family: 'Oswald', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+        }
 
-@media (max-width: 340px) {
-  .wheel-wrapper { width: 280px; height: 280px; }
-  .bulbs-ring { width: 280px; height: 280px; }
-  .wheel-glow { width: 260px; height: 260px; }
-  .wheel-box { width: 240px; height: 240px; }
-  canvas#wheel { width: 240px; height: 240px; }
-  .center-btn { width: 56px; height: 56px; font-size: 0.65rem; }
-}
-</style>
+        .copy-icon {
+            font-size: 20px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: #b8b8d1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, #f5a623, #f7d070);
+            color: #000;
+            font-weight: 800;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 12px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(245, 166, 35, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #7a7a9d;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            z-index: 200;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
 </head>
 <body>
 
-<h1>🎡 Колесо Фортуны</h1>
-<p class="subtitle">Испытай удачу — забери свой приз прямо сейчас!</p>
+    <div class="container">
+        <div>
+            <h1>🎡 Колесо Фортуны</h1>
+            <p class="subtitle">Испытай удачу — забери свой приз прямо сейчас!</p>
+        </div>
 
-<div class="wheel-wrapper">
-  <div class="bulbs-ring" id="bulbs"></div>
-  <div class="wheel-glow"></div>
-  <div class="wheel-box">
-    <canvas id="wheel" width="800" height="800"></canvas>
-    <div class="pointer" id="pointer"></div>
-    <button class="center-btn" id="centerBtn">КРУТИТЬ</button>
-  </div>
-</div>
+        <div class="wheel-wrapper">
+            <div class="wheel-border">
+                <canvas id="wheelCanvas"></canvas>
+            </div>
+            <div class="pointer"></div>
+            <button class="spin-btn" id="spinBtn">Крутить</button>
+        </div>
 
-<button class="spin-btn" id="spinBtn">Крутить</button>
-
-<p class="disclaimer">
-  Акция носит развлекательный характер. Приз предоставляется партнёром.<br>
-  18+ | <a href="#">Правила</a> | <a href="#">Конфиденциальность</a>
-</p>
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2>🎉 Поздравляем!</h2>
-    <div class="prize" id="prizeText">—</div>
-    <p class="promo-label">🔑 Введите промокод:</p>
-    <div class="promo-box">
-      <span class="promo-code" id="promoCode">supreme</span>
-      <button class="copy-btn" id="copyBtn">📋</button>
+        <div class="footer">
+            Акция носит развлекательный характер. Приз предоставляется партнёром.<br>
+            18+ | <a href="#">Правила</a> | <a href="#">Конфиденциальность</a>
+        </div>
     </div>
-    <p class="info">Перейдите на сайт партнёра, зарегистрируйтесь и введите промокод <b>supreme</b>.</p>
-    <div class="modal-actions">
-      <a href="https://gamewin777.ink/7Jhrai" class="btn-primary" target="_blank" rel="noopener">Получить приз →</a>
-      <button class="btn-secondary" id="closeModal">Закрыть</button>
+
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="btn-close" id="closeModal">&times;</button>
+            <h2>🎉 Поздравляем!</h2>
+            <p class="modal-text">🔑 Введите промокод:</p>
+            
+            <div class="promo-block" id="promoBlock" title="Нажмите, чтобы скопировать">
+                <span class="promo-code" id="promoCode">supreme</span>
+                <span class="copy-icon">📋</span>
+            </div>
+
+            <p class="modal-text">Перейдите на сайт партнёра, зарегистрируйтесь и введите промокод <b>supreme</b>.</p>
+            
+            <a href="https://gamewin777.ink/7Jhrai" class="btn-primary" target="_blank" rel="noopener">Получить приз →</a>
+        </div>
     </div>
-  </div>
-</div>
 
-<div class="confetti-container" id="confettiContainer"></div>
+    <div class="toast" id="toast">Промокод скопирован!</div>
 
-<script>
-const SEGMENTS = [
-  { label: '350 ₽',       color: '#FFA500', text: '#fff', prize: '350 ₽' },
-  { label: '100 ₽',       color: '#1a1a2e', text: '#fff', prize: '100 ₽' },
-  { label: '100 ₽',       color: '#FF3366', text: '#fff', prize: '100 ₽' },
-  { label: 'Бонус\n+300%',color: '#1a1a2e', text: '#fff', prize: 'Бонус +300%' },
-  { label: '150 ₽',       color: '#FFA500', text: '#fff', prize: '150 ₽' },
-  { label: '200 ₽',       color: '#1a1a2e', text: '#fff', prize: '200 ₽' },
-  { label: '250 ₽',       color: '#FF3366', text: '#fff', prize: '250 ₽' },
-  { label: '300 ₽',       color: '#1a1a2e', text: '#fff', prize: '300 ₽' },
-];
+    <script>
+        // Настройка колеса
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const modal = document.getElementById('modal');
+        const closeModal = document.getElementById('closeModal');
+        const promoBlock = document.getElementById('promoBlock');
+        const toast = document.getElementById('toast');
 
-const N = SEGMENTS.length;
-const ARC = (2 * Math.PI) / N;
-const HALF_ARC = ARC / 2;
+        // Сегменты и цвета
+        const segments = [
+            { text: 'БОНУС', color: '#2b5876' },
+            { text: 'ФРИСПИНЫ', color: '#4e4376' },
+            { text: 'ПОДАРОК', color: '#f5a623' },
+            { text: 'КЭШБЭК', color: '#d91a4d' },
+            { text: 'ДЖЕКПОТ', color: '#009688' },
+            { text: 'ЕЩЁ РАЗ', color: '#8e44ad' },
+            { text: 'ПРОМОКОД', color: '#e67e22' },
+            { text: '+100%', color: '#c0392b' }
+        ];
 
-const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const CX = 400, CY = 400, R = 370;
+        let currentRotation = 0;
+        let isSpinning = false;
 
-function drawWheel(rotation) {
-  ctx.clearRect(0, 0, 800, 800);
-  ctx.save();
-  ctx.translate(CX, CY);
-  ctx.rotate(rotation);
+        // Адаптивное рисование колеса
+        function drawWheel() {
+            // Устанавливаем реальный размер canvas для четкости на retina экранах
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
 
-  for (let i = 0; i < N; i++) {
-    const startAngle = -Math.PI / 2 + i * ARC - HALF_ARC;
-    const endAngle = startAngle + ARC;
-    const seg = SEGMENTS[i];
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const radius = Math.min(centerX, centerY);
+            const sliceAngle = (2 * Math.PI) / segments.length;
 
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, R, startAngle, endAngle);
-    ctx.closePath();
-    ctx.fillStyle = seg.color;
-    ctx.fill();
-    ctx.strokeStyle = '#ffd93d';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-  }
+            segments.forEach((seg, i) => {
+                const startAngle = i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
 
-  for (let i = 0; i < N; i++) {
-    const midAngle = -Math.PI / 2 + i * ARC;
-    const seg = SEGMENTS[i];
-    const textDist = R * 0.62;
-    const textX = textDist * Math.cos(midAngle);
-    const textY = textDist * Math.sin(midAngle);
-    
-    ctx.save();
-    ctx.translate(textX, textY);
-    if (Math.sin(midAngle) > 0.1) ctx.rotate(Math.PI);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = seg.text;
-    ctx.font = 'bold 34px Segoe UI';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 5;
-    
-    const lines = seg.label.split('\n');
-    const lh = 36;
-    const startY = -(lines.length - 1) * lh / 2;
-    lines.forEach((line, idx) => ctx.fillText(line, 0, startY + idx * lh));
-    ctx.restore();
-  }
+                // Рисуем сектор
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.fillStyle = seg.color;
+                ctx.fill();
+                
+                // Разделительные линии
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.stroke();
 
-  ctx.beginPath();
-  ctx.arc(0, 0, R, 0, 2 * Math.PI);
-  ctx.strokeStyle = '#ffd93d';
-  ctx.lineWidth = 10;
-  ctx.stroke();
-  ctx.restore();
-}
+                // Рисуем текст (используем Oswald)
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                
+                // Динамический размер шрифта в зависимости от радиуса
+                const fontSize = Math.max(12, radius * 0.09);
+                ctx.font = `700 ${fontSize}px 'Oswald', sans-serif`;
+                
+                ctx.fillText(seg.text, radius - 15, 5);
+                ctx.restore();
+            });
 
-let currentRotation = 0;
-drawWheel(currentRotation);
+            // Центральная заглушка (чтобы канвас не был прозрачным в центре)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1e1e2f';
+            ctx.fill();
+        }
 
-// Лампочки — ровно по кругу
-const bulbsEl = document.getElementById('bulbs');
-const BULB_COUNT = 24;
-const RING_RADIUS = 162; // радиус кольца лампочек
-const CENTER_OFFSET = 170; // центр кольца (половина от 340)
+        // Инициализация и ресайз
+        window.addEventListener('load', drawWheel);
+        window.addEventListener('resize', () => {
+            // Сохраняем угол при ресайзе
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            drawWheel();
+        });
 
-for (let i = 0; i < BULB_COUNT; i++) {
-  const bulb = document.createElement('div');
-  bulb.className = 'bulb';
-  const angle = (i / BULB_COUNT) * 2 * Math.PI - Math.PI / 2;
-  const x = CENTER_OFFSET + RING_RADIUS * Math.cos(angle) - 5;
-  const y = CENTER_OFFSET + RING_RADIUS * Math.sin(angle) - 5;
-  bulb.style.cssText = `left:${x}px;top:${y}px;width:10px;height:10px;background:#ffd93d;border-radius:50%;box-shadow:0 0 8px #ffd93d,0 0 16px #ffaa00;position:absolute;animation:bulbBlink 0.8s ease-in-out infinite alternate;animation-delay:${i*0.08}s`;
-  bulbsEl.appendChild(bulb);
-}
+        // Логика вращения
+        spinBtn.addEventListener('click', () => {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.disabled = true;
 
-let audioCtx;
-function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
-function playTick() {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.frequency.value = 1600 + Math.random()*400;
-  osc.type = 'square';
-  gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-  osc.start(); osc.stop(audioCtx.currentTime + 0.04);
-}
-function playWin() {
-  if (!audioCtx) return;
-  [523, 659, 784, 1047].forEach((f, i) => {
-    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = f; osc.type = 'sine';
-    const t = audioCtx.currentTime + i*0.12;
-    gain.gain.setValueAtTime(0.1, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-    osc.start(t); osc.stop(t + 0.35);
-  });
-}
+            // Случайный угол от 5 до 10 полных оборотов + случайный сегмент
+            const extraDegrees = 360 * 5 + Math.floor(Math.random() * 360);
+            currentRotation += extraDegrees;
+            
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-function getWinningIndex(rot) {
-  const norm = ((2*Math.PI) - (rot % (2*Math.PI))) % (2*Math.PI);
-  return Math.floor((norm + HALF_ARC) / ARC) % N;
-}
+            // Показываем модалку после остановки
+            setTimeout(() => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                modal.classList.add('active');
+            }, 5200); // Чуть больше времени, чем transition (5s)
+        });
 
-let spinning = false;
-const pointer = document.getElementById('pointer');
-const spinBtn = document.getElementById('spinBtn');
-const centerBtn = document.getElementById('centerBtn');
+        // Закрытие модалки
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
 
-function spin() {
-  if (spinning) return;
-  spinning = true;
-  initAudio();
-  spinBtn.disabled = centerBtn.disabled = true;
-  canvas.classList.add('spinning');
-
-  const winIdx = Math.floor(Math.random() * N);
-  const spins = 5 + Math.floor(Math.random()*3);
-  const jitter = (Math.random()-0.5) * HALF_ARC * 0.4;
-  const target = currentRotation + spins*2*Math.PI + (2*Math.PI - winIdx*ARC) + jitter;
-
-  const start = currentRotation, delta = target - start;
-  const duration = 4500 + Math.random()*1000;
-  const startTime = performance.now();
-  let lastSector = -1;
-
-  function animate(now) {
-    const t = Math.min((now - startTime)/duration, 1);
-    const ease = 1 - Math.pow(1-t, 4);
-    currentRotation = start + delta * ease;
-    drawWheel(currentRotation);
-
-    const cur = getWinningIndex(currentRotation);
-    if (cur !== lastSector) {
-      lastSector = cur;
-      playTick();
-      pointer.classList.remove('bounce');
-      void pointer.offsetWidth;
-      pointer.classList.add('bounce');
-    }
-
-    if (t < 1) requestAnimationFrame(animate);
-    else {
-      canvas.classList.remove('spinning');
-      setTimeout(() => showWin(SEGMENTS[getWinningIndex(currentRotation)].prize), 250);
-    }
-  }
-  requestAnimationFrame(animate);
-}
-
-spinBtn.onclick = centerBtn.onclick = spin;
-
-function showWin(prize) {
-  playWin();
-  document.getElementById('prizeText').textContent = prize;
-  document.getElementById('modal').classList.add('active');
-  launchConfetti();
-  spinning = false;
-  spinBtn.disabled = centerBtn.disabled = false;
-}
-
-function launchConfetti() {
-  const c = document.getElementById('confettiContainer');
-  c.innerHTML = '';
-  const colors = ['#ff3355','#ffd93d','#4caf50','#2196f3','#ff6b35'];
-  for (let i=0; i<60; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti';
-    el.style.cssText = `left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*0.4}s`;
-    c.appendChild(el);
-  }
-  setTimeout(() => c.innerHTML='', 4500);
-}
-
-document.getElementById('copyBtn').onclick = function() {
-  navigator.clipboard.writeText('supreme').then(() => {
-    this.textContent = '✓'; this.classList.add('copied');
-    setTimeout(() => { this.textContent='📋'; this.classList.remove('copied'); }, 2000);
-  });
-};
-
-document.getElementById('closeModal').onclick = () => document.getElementById('modal').classList.remove('active');
-document.getElementById('modal').onclick = (e) => { if(e.target===e.currentTarget) e.currentTarget.classList.remove('active'); };
-</script>
+        // Копирование промокода
+        promoBlock.addEventListener('click', () => {
+            const code = document.getElementById('promoCode').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }).catch(() => {
+                // Фоллбэк для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
+        });
+    </script>
 </body>
 </html>
